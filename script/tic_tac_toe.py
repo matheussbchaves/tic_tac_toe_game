@@ -2,6 +2,9 @@
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import font
+from typing import NamedTuple
+from itertools import cycle
+
 
 
 class TicTacToeBoard(Tk):
@@ -54,6 +57,34 @@ class TicTacToeBoard(Tk):
 
         return f'300x300+{center_width}+{center_height}'
     
+class TicTacToeGame:
+    def __init__(self, board_size = 3) :
+        self.board_size = board_size
+        self._players = cycle([Player('X', 'red'), Player('O', 'blue')])
+        self.current_player = next(self._players)
+        self.winner_combo = []
+        self._current_moves = []
+        self._has_winner = False
+        self._game_over = False
+        self._winning_combos = []
+        self._setup_board()
+
+    def _setup_board(self):
+        self._current_moves = [Move(row, col) for row in range(self.board_size) for col in range(self.board_size)]
+        self._winning_combos = self._get_winning_combos()
+
+    def _get_winning_combos(self):
+        pass
+
+class Player(NamedTuple):
+    symbol: str
+    color: str
+
+
+class Move(NamedTuple):
+    row: int
+    col: int
+    symbol: str = ''
 
 
 def main():
