@@ -70,11 +70,19 @@ class TicTacToeGame:
         self._setup_board()
 
     def _setup_board(self):
-        self._current_moves = [Move(row, col) for row in range(self.board_size) for col in range(self.board_size)]
+        self._current_moves = [[Move(row, col) for row in range(self.board_size)] for col in range(self.board_size)]
         self._winning_combos = self._get_winning_combos()
 
     def _get_winning_combos(self):
-        pass
+        row_combo = [[(move.row, move.col) for move in row] for row in self._current_moves]
+        col_combo = [[(move.row, move.col) for move in col] for col in self._current_moves]
+        diag_combo = [[(move.row, move.col) for move in diag] for diag in self._get_diagonals()]
+
+    def _get_diagonals(self):
+        diagonals = [[self._current_moves[i][i] for i in range(self.board_size)],
+                    [self._current_moves[i][self.board_size - 1 - i] for i in range(self.board_size)]]
+        
+        return diagonals
 
 class Player(NamedTuple):
     symbol: str
@@ -94,4 +102,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
