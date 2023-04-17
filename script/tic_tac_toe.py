@@ -78,11 +78,19 @@ class TicTacToeGame:
         col_combo = [[(move.row, move.col) for move in col] for col in self._current_moves]
         diag_combo = [[(move.row, move.col) for move in diag] for diag in self._get_diagonals()]
 
+        return row_combo + col_combo + diag_combo
+
     def _get_diagonals(self):
         diagonals = [[self._current_moves[i][i] for i in range(self.board_size)],
                     [self._current_moves[i][self.board_size - 1 - i] for i in range(self.board_size)]]
         
         return diagonals
+    
+    def _validate_move(self, move):
+        empty_tile = self._current_moves[move.row][move.col].symbol == ''
+        has_winner = self._has_winner
+        return empty_tile and not has_winner
+        
 
 class Player(NamedTuple):
     symbol: str
