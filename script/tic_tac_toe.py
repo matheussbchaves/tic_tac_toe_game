@@ -58,14 +58,13 @@ class TicTacToeBoard(Tk):
         return f'300x300+{center_width}+{center_height}'
     
 class TicTacToeGame:
-    def __init__(self, board_size = 3) :
+    def __init__(self, board_size = 3):
         self.board_size = board_size
         self._players = cycle([Player('X', 'red'), Player('O', 'blue')])
         self.current_player = next(self._players)
         self.winner_combo = []
         self._current_moves = []
         self._has_winner = False
-        self._game_over = False
         self._winning_combos = []
         self._setup_board()
 
@@ -91,7 +90,23 @@ class TicTacToeGame:
         has_winner = self._has_winner
         return empty_tile and not has_winner
         
-
+    def process_move(self, move):
+        self._current_moves[move.row][move.col] = move
+        for combo in self._winning_combos:
+            results = set(self._current_moves[i][j] for i, j in combo)
+            win = (len(results) == 1) and ('' not in results)
+            if win:
+                self._has_winner = True
+                self.winner_combo = combo
+                break
+        
+    def tied_game(self):
+        board = (move.label for row in self._current_moves for move in row)
+        return not self._has_winner and all(board)
+    
+    def toggle_player(self):
+        self.current_player = next(self._players)
+        
 class Player(NamedTuple):
     symbol: str
     color: str
