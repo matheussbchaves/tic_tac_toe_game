@@ -1,36 +1,38 @@
 
-from tkinter import *
-from tkinter.ttk import *
+import tkinter as tk
+from tkinter import ttk
 from tkinter import font
 from typing import NamedTuple
 from itertools import cycle
 
 
 
-class TicTacToeBoard(Tk):
-    def __init__(self):
+class TicTacToeBoard(tk.Tk):
+    def __init__(self, game):
         super().__init__()
         self.title("Tic Tac Toe Game")
         self.geometry(self._center_window())
-        self.resizable(False, False)
+        #self.resizable(False, False)
+        self._game = game
         self._cells = {}
         self._draw_board_display()
         self._draw_grid()
 
     def _draw_board_display(self):
-        display_frame = Frame(self)
-        self.display = Label(display_frame,
+        display_frame = ttk.Frame(self)
+        self.display = ttk.Label(display_frame,
                              text='Ready?',
                              font=font.Font(size=20, weight='bold'))
         display_frame.pack()
         self.display.pack()
 
     def _draw_grid(self):
-        grid_frame = Frame(self)
+        grid_frame = ttk.Frame(self)
 
-        for row in range(3):
-            for col in range(3):
-                button = Button(grid_frame,
+        for row in range(self._game.board_size):
+
+            for col in range(self._game.board_size):
+                button = ttk.Button(grid_frame,
                                 text='',
                                 #font=font.Font(size=36, weight='bold'),
                                 #fg='black',
@@ -40,6 +42,7 @@ class TicTacToeBoard(Tk):
                                 )
                 
                 self._cells[button] = (row, col)
+                button.bind("<ButtonPress-1>", self.play)
                 button.grid(row=row,
                             column=col,
                             ipadx=25,
@@ -57,6 +60,44 @@ class TicTacToeBoard(Tk):
 
         return f'300x300+{center_width}+{center_height}'
     
+    def play(self, event):
+        clicked_button = event.widget
+        row, col  = self._cells[clicked_button]
+        move = Move(row, col, self._game.current_player.symbol)
+
+        if self._game._validate_move(move):
+            self._update_button(clicked_button)
+            self._game.process_move(move)
+            
+            if self._game.tied_game():
+                self._update_display(msg = 'Tied!', color = 'red')
+
+            elif self._game._has_winner:
+                self._highlight_cells()
+                msg = f'{self._game.current_player.symbol} won!'
+                color = 'green'
+                self._update_display(msg, color)
+
+            else:
+                self._game.toggle_player()
+                msg = f"{self._game.current_player.symbol}'s turn."
+                self._update_display(msg)
+
+    def _update_button(self, clicked_button):
+        clicked_button.config(text = self._game.current_player.symbol)
+        #clicked_button.config(foreground = self._game.current_player.color)
+
+    def _update_display(self, msg, color="black"):
+        self.display["text"] = msg
+        self.display["foreground"] = color
+
+    def _highlight_cells(self):
+
+        for button, coordinates in self._cells.items():
+
+            if coordinates in self._game.winner_combo:
+                button.config(highlightbackground="red")
+
 class TicTacToeGame:
     def __init__(self, board_size = 3):
         self.board_size = board_size
@@ -88,20 +129,23 @@ class TicTacToeGame:
     def _validate_move(self, move):
         empty_tile = self._current_moves[move.row][move.col].symbol == ''
         has_winner = self._has_winner
+
         return empty_tile and not has_winner
         
     def process_move(self, move):
         self._current_moves[move.row][move.col] = move
+
         for combo in self._winning_combos:
             results = set(self._current_moves[i][j] for i, j in combo)
             win = (len(results) == 1) and ('' not in results)
+
             if win:
                 self._has_winner = True
                 self.winner_combo = combo
                 break
         
     def tied_game(self):
-        board = (move.label for row in self._current_moves for move in row)
+        board = (move.symbol for row in self._current_moves for move in row)
         return not self._has_winner and all(board)
     
     def toggle_player(self):
@@ -119,9 +163,12 @@ class Move(NamedTuple):
 
 
 def main():
-    board = TicTacToeBoard()
+
+    game = TicTacToeGame()
+    board = TicTacToeBoard(game)
     board.mainloop()
 
 
 if __name__ == '__main__':
     main()
+
